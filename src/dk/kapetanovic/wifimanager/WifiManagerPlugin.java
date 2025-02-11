@@ -263,22 +263,11 @@ public class WifiManagerPlugin extends CordovaPlugin {
     }
 
     private void getScanResults(CallbackContext callbackContext) throws JSONException {
-        if(hasLocationPermission()) {
-            // We should end up here most of the time
-            getScanResultsWithPermission(callbackContext);
-        } else {
-            synchronized(scanResultsCallbacks) {
-                if(hasLocationPermission()) {
-                    // We got permission while acquiring lock
-                    getScanResultsWithPermission(callbackContext);
-                    return;
-                }
+        synchronized(scanResultsCallbacks) {
+            scanResultsCallbacks.add(callbackContext);
 
-                scanResultsCallbacks.add(callbackContext);
-
-                if(scanResultsCallbacks.size() == 1) {
-                    cordova.requestPermission(this, REQUEST_CODE_SCAN_RESULTS, null);
-                }
+            if(scanResultsCallbacks.size() == 1) {
+                cordova.requestPermission(this, REQUEST_CODE_SCAN_RESULTS, null);
             }
         }
     }
@@ -820,11 +809,6 @@ public class WifiManagerPlugin extends CordovaPlugin {
         } catch(IllegalAccessException e) {
             return null;
         }
-    }
-
-    private boolean hasLocationPermission() {
-        return cordova.hasPermission(ACCESS_COARSE_LOCATION) ||
-                cordova.hasPermission(ACCESS_FINE_LOCATION);
     }
 
     private boolean hasWriteSettingsPermission() {
