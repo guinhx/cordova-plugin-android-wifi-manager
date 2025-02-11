@@ -16,6 +16,7 @@ import android.net.wifi.WifiManager;
 import android.net.ConnectivityManager;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.os.Build;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -34,8 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WifiManagerPlugin extends CordovaPlugin {
-    private static final String ACCESS_COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
-    private static final String ACCESS_FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
+
     private static final String ACTION_MANAGE_WRITE_SETTINGS = Settings.ACTION_MANAGE_WRITE_SETTINGS;
 
     private static final String WIFI_AP_STATE_CHANGED_ACTION = getStringField("WIFI_AP_STATE_CHANGED_ACTION");
@@ -107,13 +107,24 @@ public class WifiManagerPlugin extends CordovaPlugin {
         if(WIFI_AP_STATE_CHANGED_ACTION != null) intentFilter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
 
         cordova.getActivity().registerReceiver(broadcastReceiver, intentFilter);
+        final Context context = cordova.getActivity().getApplicationContext();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+          context.registerReceiver((BroadcastReceiver) broadcastReceiver, intentFilter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+          context.registerReceiver((BroadcastReceiver) broadcastReceiver, intentFilter);
+        }
     }
 
     @Override
     public void onPause(boolean multitasking) {
         super.onPause(multitasking);
 
-        cordova.getActivity().unregisterReceiver(broadcastReceiver);
+        final Context context = cordova.getActivity().getApplicationContext();
+        try {
+            context.unregisterReceiver(broadcastReceiver);
+        } catch (IllegalArgumentException e) {
+            // Ignore
+        }
     }
 
     @Override
@@ -266,7 +277,7 @@ public class WifiManagerPlugin extends CordovaPlugin {
                 scanResultsCallbacks.add(callbackContext);
 
                 if(scanResultsCallbacks.size() == 1) {
-                    cordova.requestPermission(this, REQUEST_CODE_SCAN_RESULTS, ACCESS_COARSE_LOCATION);
+                    cordova.requestPermission(this, REQUEST_CODE_SCAN_RESULTS, null);
                 }
             }
         }
@@ -535,7 +546,9 @@ public class WifiManagerPlugin extends CordovaPlugin {
 
         JSONObject json = new JSONObject();
         json.put("BSSID", wifiInfo.getBSSID());
-        json.put("frequency", wifiInfo.getFrequency());
+        if (Build.VERSION.SDK_INT >= 21) {
+            json.put("frequency", wifiInfo.getFrequency());
+        }
         json.put("hiddenSSID", wifiInfo.getHiddenSSID());
         json.put("ipAddress", wifiInfo.getIpAddress());
         json.put("linkSpeed", wifiInfo.getLinkSpeed());
