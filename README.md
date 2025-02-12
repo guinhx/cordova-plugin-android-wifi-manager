@@ -1,291 +1,173 @@
-# cordova-plugin-android-wifi-manager
+# Cordova Plugin: Android WiFi Manager
 
-Cordova plugin for accessing Android WifiManager.
+Cordova plugin for accessing Android's `WifiManager`.
 
-    cordova plugin add cordova-plugin-android-wifi-manager
+## Installation
+
+Install the plugin using Cordova CLI:
+```sh
+cordova plugin add git+https://github.com/guinhx/cordova-plugin-android-wifi-manager.git
+```
 
 ## Usage
 
-Access the plugin after the device is ready, exposed at `window.cordova.plugins.WifiManager`.
+Access the plugin after the device is ready. The plugin is exposed at `window.cordova.plugins.WifiManager`.
 
 ```javascript
-var WifiManager = cordova.plugins.WifiManager
+var WifiManager = cordova.plugins.WifiManager;
 
+// Listen for WiFi state changes
 WifiManager.onwifistatechanged = function (data) {
-  console.log(data.previousWifiState, '->', data.wifiState)
-}
+  console.log(data.previousWifiState, '->', data.wifiState);
+};
 
-// Turn on Wifi
+// Turn on WiFi
 WifiManager.setWifiEnabled(true, function (err, success) {
-  console.log(err, success)
-})
+  console.log(err, success);
+});
 ```
 
-## API
+## API Reference
 
-All the exposed methods and events have matching [WifiManager](https://developer.android.com/reference/android/net/wifi/WifiManager.html) counterparts. The methods accept an optional callback as last argument, which is either called with an error object first, or with the value returned by the corresponding *Java* method.
+All exposed methods and events have corresponding [WifiManager](https://developer.android.com/reference/android/net/wifi/WifiManager.html) counterparts. Methods accept an optional callback as the last argument, receiving either an error object or the returned value.
+
+### Network Configuration
 
 #### `addNetwork(wifiConfiguration, callback(err, netId))`
+Adds a new network to the configured networks list.
 
-Add a new network to the set of configured networks.
-
-The method accepts a *JavaScript* object representing a [WifiConfiguration](https://developer.android.com/reference/android/net/wifi/WifiConfiguration.html) *Java* instance.
-
-Note that the *Java* bitsets are represented as objects where the keys match the corresponding *WifiConfiguration* constants, e.g. `wifiConfiguration.allowedAuthAlgorithms.get(WifiConfiguration.AuthAlgorithm.LEAP)` maps to `wifiConfiguration.allowedAuthAlgorithms.LEAP` in `JavaScript`.
-
-Example of a *WifiConfiguration* object.
-
+Example *WifiConfiguration* object:
 ```javascript
 {
-  BSSID: 'any',
   SSID: 'my-ssid',
-  allowedAuthAlgorithms: {
-    LEAP: true,
-    OPEN: true,
-    SHARED: true
-  },
-  allowedGroupCiphers: {
-    CCMP: true,
-    TKIP: true,
-    WEP104: true,
-    WEP40: true
-  },
-  allowedKeyManagement: {
-    IEEE8021X: true,
-    NONE: true,
-    WPA_EAP: true,
-    WPA_PSK: true
-  },
-  allowedPairwiseCiphers: {
-    CCMP: true,
-    NONE: true,
-    TKIP: true
-  },
-  allowedProtocols: {
-    RSN: true,
-    WPA: true
-  },
-  hiddenSSID: false,
-  networkId: 0,
+  BSSID: 'any',
   preSharedKey: 'psk',
+  hiddenSSID: false,
+  allowedKeyManagement: { WPA_PSK: true },
   status: 'ENABLED',
-  wepKeys: [
-    null,
-    null,
-    null,
-    null
-  ],
-  wepTxKeyIndex: 0
+  networkId: 1,
+  allowedAuthAlgorithms: { OPEN: true },
+  allowedProtocols: { WPA: true },
+  allowedPairwiseCiphers: { CCMP: true },
+  allowedGroupCiphers: { TKIP: true }
 }
 ```
-
-Possible values for *status*: `ENABLED`, `DISABLED` or `CURRENT`.
+Possible values for `status`: `ENABLED`, `DISABLED`, `CURRENT`.
 
 #### `disableNetwork(netId, callback(err, success))`
-
-Disable a configured network.
-
-#### `disconnect(callback(err, success))`
-
-Disassociate from the currently active access point.
+Disables a configured network.
 
 #### `enableNetwork(netId, attemptConnect, callback(err, success))`
-
-Allow a previously configured network to be associated with.
+Allows a previously configured network to be used.
 
 #### `getConfiguredNetworks(callback(err, wifiConfigurations))`
+Retrieves a list of all configured networks.
 
-Get a list of all configured networks. The callback recevies a list of *WifiConfiguration* objects.
+#### `removeNetwork(netId, callback(err, success))`
+Removes a configured network.
+
+#### `saveConfiguration(callback(err, success))`
+Saves the current list of configured networks.
+
+### Connection Management
+
+#### `disconnect(callback(err, success))`
+Disconnects from the currently active access point.
+
+#### `reassociate(callback(err, success))`
+Reassociates with the currently active network.
+
+#### `reconnect(callback(err, success))`
+Reconnects if disconnected.
+
+#### `setWifiEnabled(enabled, callback(err, success))`
+Enables or disables WiFi.
+
+#### `getWifiState(callback(err, wifiState))`
+Retrieves the WiFi state. Possible values:
+- `DISABLED`
+- `DISABLING`
+- `ENABLED`
+- `ENABLING`
+- `UNKNOWN`
+
+### Network Information
 
 #### `getConnectionInfo(callback(err, wifiInfo))`
+Gets the current WiFi connection details.
 
-Get information about the currently active WiFi connection. The callback receives a [WifiInfo](https://developer.android.com/reference/android/net/wifi/WifiInfo.html) object.
-
-Example of a *WifiInfo* object.
-
+Example *WifiInfo* object:
 ```javascript
 {
-  BSSID: 'any',
-  frequency: 2456,
-  hiddenSSID: false,
-  ipAddress: 2130706433,
-  linkSpeed: 2300,
-  macAddress: '00:14:22:01:23:45',
-  networkId: 0,
-  rssi: -15,
   SSID: 'my-ssid',
-  supplicantState: 'COMPLETED'
+  BSSID: 'any',
+  ipAddress: 2130706433,
+  macAddress: '00:14:22:01:23:45',
+  linkSpeed: 2300,
+  rssi: -15,
+  supplicantState: 'COMPLETED',
+  frequency: 2412,
+  networkId: 1,
+  hiddenSSID: false
 }
 ```
 
-See [SupplicantState](https://developer.android.com/reference/android/net/wifi/SupplicantState.html) for possible values for the *supplicantState* property.
-
 #### `getDhcpInfo(callback(err, dhcpInfo))`
+Retrieves the last successful DHCP request's assigned addresses.
 
-Get the assigned addresses from the last successfull DHCP request. The callback receives a [DhcpInfo](https://developer.android.com/reference/android/net/DhcpInfo.html) object.
-
-Example of a *DhcpInfo* object.
-
+Example *DhcpInfo* object:
 ```javascript
 {
-  dns1: 2130706433,
-  dns2: 2130706434,
-  gateway: 2130706433,
-  ipAddress: 2130706433,
-  leaseDuration: 60,
-  netmask: 4278190080,
-  serverAddress: 2130706433
+  dns1: 19216811,
+  dns2: 19216812,
+  gateway: 19216810,
+  ipAddress: 19216813,
+  leaseDuration: 3600,
+  netmask: 2552552550,
+  serverAddress: 19216814
 }
 ```
 
 #### `getScanResults(callback(err, scanResults))`
+Gets the results from the latest WiFi scan.
 
-Get the results from the latest WiFi scan. The callback receives a list of [ScanResult](https://developer.android.com/reference/android/net/wifi/ScanResult.html) objects.
+### Events
 
-Example of a *ScanResult* object.
-
-```javascript
-{
-  BSSID: 'any',
-  SSID: 'my-ssid',
-  capabilities: '[WPA2-PSK-CCMP]',
-  centerFreq0: 80,
-  centerFreq1: 80,
-  channelWidth: '80MHZ',
-  frequency: 2456,
-  level: -15,
-  timestamp: 1507117436782
-}
-```
-
-Possible values for *channelWidth*: `20MHZ`, `40MHZ`, `80MHZ`, `160MHZ` or `80MHZ_PLUS_MHZ`.
-
-#### `getWifiState(callback(err, wifiState))`
-
-Get WiFi enabled state. Possible values are `DISABLED`, `DISABLING`, `ENABLED`, `ENABLING` and `UNKNOWN`.
-
-#### `isScanAlwaysAvailable(callback(err, alwaysAvailable))`
-
-Check if scanning is always available.
-
-#### `isWifiEnabled(callback(err, wifiEnabled))`
-
-Check if WiFi is either enabled or disabled.
-
-#### `reassociate(callback(err, success))`
-
-Reconnect to the currently active network, even if we already connected.
-
-#### `reconnect(callback(err, success))`
-
-Reconnect to the currently active network, if we are currently disconnected.
-
-#### `removeNetwork(netId, callback(err, success))`
-
-Remove a configured network.
-
-#### `saveConfiguration(callback(err, success))`
-
-Persist the current list of configured networks.
-
-#### `setWifiEnabled(enabled, callback(err, success))`
-
-Enable or disable WiFi.
-
-#### `startScan(callback(err, success))`
-
-Request a scan for WiFi networks.
-
-#### `updateNetwork(wifiConfiguration, callback(err, netId))`
-
-Update an already configured network.
-
-## Events
-
-The plugin also emits an event for each available broadcast intent action. The event callbacks are called with an object containing all the extra information from the intent.
-
-#### `onnetworkidschanged({})`
-
-The IDs of the configured networks might have changed.
+The plugin emits events for various WiFi state changes.
 
 #### `onnetworkstatechanged({ networkInfo, BSSID, wifiInfo })`
-
-WiFi connectivity changed. The callback receives a [NetworkInfo](https://developer.android.com/reference/android/net/NetworkInfo.html) object, a *BSSID* string and a *WifiInfo* object.
-
-Example of a *NetworkInfo* object.
-
-```javascript
-{
-  detailedState: 'AUTHENTICATING',
-  extraInfo: null,
-  reason: null,
-  state: 'CONNECTING',
-  subtype: 0,
-  subtypeName: '',
-  type: 'WIFI',
-  typeName: 'WIFI',
-  available: true,
-  connected: false,
-  connectedOrConnecting: true,
-  failover: false,
-  roaming: false
-}
-```
-
-See [NetworkInfo.DetailedState](https://developer.android.com/reference/android/net/NetworkInfo.DetailedState.html) for possible values for the *detailedState* property, and [NetworkInfo.State](https://developer.android.com/reference/android/net/NetworkInfo.State.html) for possible values for the *state* property.
-
-#### `onrssichanged({ RSSI })`
-
-Network signal strength changed.
-
-#### `onscanresultsavailable({ resultsUpdated })`
-
-WiFi network scan completed. Results can be retrieved using the `getScanResults` method.
-
-#### `onsupplicantconnectionchange({ supplicantConnected })`
-
-Connection to the supplicant has been established or lost.
-
-#### `onsupplicantstatechanged({ newState, supplicantError })`
-
-The state of establishing a connection to a network has changed. `newState` contains the new *SupplicantState* value, and `supplicantError` indicates an error (e.g. `ERROR_AUTHENTICATING`).
+Triggered when WiFi connectivity changes.
 
 #### `onwifistatechanged({ wifiState, previousWifiState })`
+Triggered when the WiFi state changes.
 
-WiFi state changed.
+#### `onrssichanged({ RSSI })`
+Triggered when signal strength changes.
+
+#### `onscanresultsavailable({ resultsUpdated })`
+Triggered when a WiFi scan is completed.
 
 #### `onevent(name, data)`
-
-Called on all events with the event name (e.g. `wifistatechanged`) and extra information.
+Called for all events with the event name and extra data.
 
 #### `onerror`
-
 Called on internal errors.
 
-## Hotspot
+### Hotspot Management (Experimental)
 
-The Android API does not expose a way to modify the hotspot configurations. But it is possible using reflection to access private and undocumented methods of the `WifiManager` instance. This approach is fragile and has some quirks, but has been tested to work with API version 23.
+Since the Android API does not expose hotspot modification, private and undocumented methods are used. Functionality may be limited and version-dependent.
 
 #### `getWifiApConfiguration(callback(err, wifiConfiguration))`
-
-Get the current *WifiConfiguration* object for the hotspot.
-
-#### `getWifiApState(callback(err, wifiApState))`
-
-Get WiFi access point state. Possible values are `DISABLED`, `DISABLING`, `ENABLED`, `ENABLING` and `FAILED`.
-
-#### `isWifiApEnabled(callback(err, wifiApEnabled))`
-
-Check if WiFi access point is either enabled or disabled.
-
-#### `setWifiApConfiguration(wifiConfiguration, callback(err, success))`
-
-Set the WiFi access point configuration.
+Retrieves the current hotspot configuration.
 
 #### `setWifiApEnabled(wifiConfiguration, enabled, callback(err, success))`
-
-Enable or disable WiFi access point with the given configuration.
+Enables or disables the WiFi hotspot with the given configuration.
 
 #### `onwifiapstatechanged({ wifiApState, previousWifiApState })`
+Triggered when the WiFi hotspot state changes.
 
-Event triggered when the WiFi access point state changes.
+## Notes
+- This plugin interacts with Android's native `WifiManager`, so behavior may vary by Android version and device manufacturer.
+
+## License
+This plugin is released under the MIT License.
