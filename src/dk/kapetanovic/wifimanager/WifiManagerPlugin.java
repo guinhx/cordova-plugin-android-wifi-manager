@@ -106,7 +106,6 @@ public class WifiManagerPlugin extends CordovaPlugin {
         intentFilter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
         if(WIFI_AP_STATE_CHANGED_ACTION != null) intentFilter.addAction(WIFI_AP_STATE_CHANGED_ACTION);
 
-        cordova.getActivity().registerReceiver(broadcastReceiver, intentFilter);
         final Context context = cordova.getActivity().getApplicationContext();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
           context.registerReceiver((BroadcastReceiver) broadcastReceiver, intentFilter, Context.RECEIVER_NOT_EXPORTED);
