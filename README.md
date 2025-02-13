@@ -1,6 +1,8 @@
 # Cordova Plugin: Android WiFi Manager
 
-Cordova plugin for accessing Android's `WifiManager`.
+### Cordova plugin for accessing Android's `WifiManager`.
+
+This is a fork of `cordova-plugin-android-wifi-manager` by [Diego S. Araujo Teles](https://github.com/guinhx), aimed at fixing issues related to new Android APIs and possibly refactoring in the future. If you notice anything missing in the documentation, I suggest checking the original [kapetan/cordova-plugin-android-wifi-manager](https://github.com/kapetan/cordova-plugin-android-wifi-manager).
 
 ## Installation
 
